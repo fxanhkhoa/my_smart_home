@@ -259,6 +259,41 @@ void handleSmartHome(){
   
 }
 
+void handleDevice1(){
+  char html[10];
+  bool state = false;
+  state = digitalRead(GPIO14);
+  sprintf(html, "%d", state);
+  server.send(200, "text/html", html);
+}
+
+void handleDevice2(){
+  char html[10];
+  bool state = false;
+  state = digitalRead(GPIO12);
+  sprintf(html, "%d", state);
+  server.send(200, "text/html", html);
+}
+
+void handleNotFound() {
+  digitalWrite ( LED_BUILTIN, 0 );
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+
+  for ( uint8_t i = 0; i < server.args(); i++ ) {
+    message += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
+  }
+
+  server.send ( 404, "text/plain", message );
+  digitalWrite ( LED_BUILTIN, 1 ); //turn the built in LED on pin DO of NodeMCU off
+}
+
 void setup() {
   pinMode(GPIO4, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
   pinMode(GPIO5, OUTPUT);
@@ -283,6 +318,10 @@ void setup() {
   server.on("/", handleRoot);      //Which routine to handle at root location
   server.on("/Config", handleConfig);
   server.on("/smarthome", handleSmartHome);
+  server.on("/device1", handleDevice1);
+  server.on("/device2", handleDevice2);
+
+  server.onNotFound ( handleNotFound );
  
   server.begin();                  //Start server
   Serial.println("HTTP server started");
