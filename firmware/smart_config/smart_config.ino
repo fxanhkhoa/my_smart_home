@@ -43,9 +43,16 @@ void handleRoot(){
     <head>\
       <meta charset=\"UTF-8\">\
       <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\
-      <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" >\
-      <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css\">\
-      <script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\" ></script>\
+      <style>\
+        button {\
+          background-color: #4CAF50;\
+          color: white;\
+          padding: 12px 20px;\
+          border: none;\
+          border-radius: 4px;\
+          cursor: pointer;\
+          }\
+      </style>\
       <title>My Smart Home</title>\
     </head>\  
     <body>\
@@ -101,9 +108,60 @@ void handleConfig() {
     <head>\
       <meta charset=\"UTF-8\">\
       <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\
-      <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\">\
-      <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css\">\
-      <script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\"></script>\
+      <style>\
+        body {font-family: Arial, Helvetica, sans-serif;}\
+        * {box-sizing: border-box;}\
+   \
+        input[type=text], select, textarea {\
+          width: 100%;\
+          padding: 12px;\
+          border: 1px solid #ccc;\
+          border-radius: 4px;\
+          box-sizing: border-box;\
+          margin-top: 6px;\
+          margin-bottom: 16px;\
+          resize: vertical;\
+        }\
+        \
+        input[type=password], select, textarea {\
+          width: 100%;\
+          padding: 12px;\
+          border: 1px solid #ccc;\
+          border-radius: 4px;\
+          box-sizing: border-box;\
+          margin-top: 6px;\
+          margin-bottom: 16px;\
+          resize: vertical;\
+        }\
+    \
+        input[type=submit] {\
+          background-color: #4CAF50;\
+          color: white;\
+          padding: 12px 20px;\
+          border: none;\
+          border-radius: 4px;\
+          cursor: pointer;\
+        }\
+        \
+        button[type=submit] {\
+          background-color: #4CAF50;\
+          color: white;\
+          padding: 12px 20px;\
+          border: none;\
+          border-radius: 4px;\
+          cursor: pointer;\
+        }\
+    \
+        input[type=submit]:hover {\
+          background-color: #45a049;\
+        }\
+    \
+        .container {\
+          border-radius: 5px;\
+          background-color: #f2f2f2;\
+          padding: 20px;\
+        }\
+      </style>\
       <title>My Smart Home</title>\
     </head>\
     <body>\
@@ -144,27 +202,61 @@ void handleSmartHome(){
     digitalWrite(GPIO12, !digitalRead(GPIO12));
     Serial.print(server.arg("device2"));
   }
+  bool device1_state = false, device2_state = false;
+  char device1Text[150], device2Text[150];
   
-  server.send(200, "text/html",
+  device1_state = digitalRead(GPIO14);
+  device2_state = digitalRead(GPIO12);
+
+  if (device1_state){
+    strcpy(device1Text," <button type=\"button\" onclick=\"window.location.href=\'/smarthome?device1=1\'\">Turn off device 1</button>");
+  }
+  else{
+    strcpy(device1Text," <button type=\"button\" onclick=\"window.location.href=\'/smarthome?device1=1\'\">Turn on device 1</button>");
+  }
+
+  if (device2_state){
+    strcpy(device2Text," <button type=\"button\" onclick=\"window.location.href=\'/smarthome?device2=1\'\">Turn off device 2</button>");
+  }
+  else{
+    strcpy(device2Text," <button type=\"button\" onclick=\"window.location.href=\'/smarthome?device2=1\'\">Turn on device 2</button>");
+  }
+
+  char html[1000];
+
+  snprintf(html, 1000, 
   "<!DOCTYPE html>\
     <html>\
     <head>\
       <meta charset=\"UTF-8\">\
       <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\
-      <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" >\
-      <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css\">\
-      <script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\" ></script>\
+      <style>\
+        button {\
+          background-color: #ad6ae8;\
+          color: white;\
+          padding: 12px 20px;\
+          border: none;\
+          border-radius: 4px;\
+          cursor: pointer;\
+        }\
+      </style>\
       <title>My Smart Home</title>\
     </head>\  
     <body>\
       <div class=\"container\">\
         <h2>Smart Switch</h2>\
-          <button type=\"button\" class=\"btn btn-warning\" onclick=\"window.location.href=\'/smarthome?device1=1\'\">Device 1</button>\
-          <button type=\"button\" class=\"btn btn-success\" onclick=\"window.location.href=\'/smarthome?device2=1\'\">Device 2</button>\
+          %s\
+          %s\
       </div>\
     </body>\
-    </html>"
-  );
+    </html>", 
+    
+    device1Text, 
+    device2Text
+    );
+  
+  server.send(200, "text/html", html);
+  
 }
 
 void setup() {
