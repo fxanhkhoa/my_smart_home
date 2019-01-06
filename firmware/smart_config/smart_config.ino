@@ -29,15 +29,24 @@ const char *ssid = "Khoa_Smart_Home";
 const char *password = "smart12345678";
 const int DIGITAL_PIN = 12; // Digital pin to be read
 
+
 ESP8266WebServer server(80);
 
 char connect_ssid[30], connect_password[30];
+char IP[20] = "192.168.3.1";
+char mac[20];
 
 //==============================================================
 //     This rutine is exicuted when you open its IP in browser
 //==============================================================
 void handleRoot(){
-  server.send(200, "text/html",
+
+  char html[1500];
+
+  //WiFi.localIP().toString().toCharArray(IP, 11);
+  //WiFi.macAddress().toCharArray(mac, 11);
+
+  snprintf(html, 1500, 
   "<!DOCTYPE html>\
     <html>\
     <head>\
@@ -52,22 +61,44 @@ void handleRoot(){
           border-radius: 4px;\
           cursor: pointer;\
           }\
+          .container {\
+            border-radius: 5px;\
+            text-align: center;\
+            padding: 20px;\
+          }  \
+          .device{\
+            padding: 5px;\
+          }\
+          .status{\
+            text-shadow: 2px;\
+            padding: 5px;\
+            color: #d6a8ff;\
+          }\
       </style>\
       <title>My Smart Home</title>\
     </head>\  
     <body>\
       <div class=\"container\">\
         <h2>Smart Switch</h2>\
-        <div class=\"row\">\
+        <div class=\"device\">\
+          <div class=\"status\">IP: %s </div>\
+          <div class=\"status\">MAC: %s </div>\
+        </div>\
+        <div class=\"device\">\
           <button type=\"button\" class=\"btn btn-warning\" onclick=\"window.location.href=\'Config\'\">Config Wifi</button>\
         </div>\
-        <div class=\"row\">\
+        <div class=\"device\">\
           <button type=\"button\" class=\"btn btn-success\" onclick=\"window.location.href=\'smarthome\'\">Go To Smart Home Now</button>\
         </div>\
       </div>\
     </body>\
-    </html>"
-  );
+    </html>",
+
+    IP,
+    mac
+    );
+  
+  server.send(200, "text/html", html);
 }
 
 
@@ -80,7 +111,8 @@ void handleConfig() {
   //Serial.println(server.arg("ip").length());
   Serial.println(connect_password);
 
-  if ((server.arg("ip").length() > 0) && (server.arg("pwd").length() > 0)){
+  //if ((server.arg("ip").length() > 0) && (server.arg("pwd").length() > 0)){
+  if ((server.arg("ip").length() > 0)){
   
     Serial.print("Connecting to ");
     Serial.println(connect_ssid);
@@ -95,6 +127,8 @@ void handleConfig() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
+    WiFi.localIP().toString().toCharArray(IP, 20);
+     
     WiFi.softAPdisconnect(true);
 
     server.begin();
@@ -239,14 +273,26 @@ void handleSmartHome(){
           border-radius: 4px;\
           cursor: pointer;\
         }\
+        .container {\
+          border-radius: 5px;\
+          text-align: center;\
+          padding: 20px;\
+        }  \
+        .device{\
+          padding: 5px;\
+        }\
       </style>\
       <title>My Smart Home</title>\
     </head>\  
     <body>\
       <div class=\"container\">\
         <h2>Smart Switch</h2>\
+        <div class=\"device\">\
           %s\
+        </div>\
+        <div class=\"device\">\
           %s\
+        </div>\
       </div>\
     </body>\
     </html>", 
@@ -314,6 +360,10 @@ void setup() {
   IPAddress myIP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(myIP);
+
+  myIP.toString().toCharArray(IP, 20);
+  
+  WiFi.macAddress().toCharArray(mac, 20);
 
   server.on("/", handleRoot);      //Which routine to handle at root location
   server.on("/Config", handleConfig);
